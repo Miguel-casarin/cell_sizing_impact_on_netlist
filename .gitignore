@@ -1,0 +1,13 @@
+venv/
+.env/
+.venv/
+
+__pycache__/
+*.pyc
+
+# Ignore all files in out/ and its subdirectories
+out/**
+# Unignore directories so git can traverse them
+!out/**/
+# Unignore .gitkeep files so the empty directories are committed
+!out/**/.gitkeep
