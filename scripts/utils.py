@@ -1,22 +1,11 @@
 import os
 import csv
 import numpy as np
-import hashlib 
+import shutil
 
 from scripts import Decoder
 from scripts import makeCSV
 
-def decoder_file_name(total_gates: int, size_list: list) -> str:
-    if len(size_list) != total_gates:
-        raise ValueError("total_gates range dont match size_list")
- 
-    encoder = Decoder.Encoder(size_list, total_gates)
-    raw_id = encoder.base6_to_decimal()
-
-    if raw_id == 0:
-        return "0"
-    digest = hashlib.sha256(f"{raw_id}_{size_list}".encode()).hexdigest()
-    return digest[:32]
 
 # retorna uma lista dos tipos logicos com os drives stanges
 def merge_size_id(drives_list: list, comb_list: list) -> list:
@@ -143,3 +132,5 @@ def merge_dicts(dict_base: dict, field_base: str, dict_update: dict, field_updat
         else:
             print(f"ERROR to merge path ocurence in base dict")
 
+def copy_and_rename(tamplete_file: str, output_file: str) -> None:
+    shutil.copy(tamplete_file, output_file)

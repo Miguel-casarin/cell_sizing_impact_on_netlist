@@ -2,14 +2,20 @@ import numpy as np
 import json
 import time 
 import sys
+import os
 
-from scripts import combinations, readV, getFeatures, dict, singleSTA
+
+from scripts import combinations, readV, getFeatures, dict, singleSTA, utils
 
 design = "debug"
 verilogs_inputs = "./verilogs"
 out_dir = "./out"
 lib_dir = "./library"
 lib = "Nangate45_typ.lib"
+
+
+
+
 
 try:
     design_io = readV.Get_IO(f"{design}.v", verilogs_inputs)
@@ -18,7 +24,7 @@ try:
     netlist_outputs = design_io.get_inputs()
 except Exception as error:
     print(f"ERROR TO GET NETLIST IO:\n{error}")
-    
+
 try:
     design_info = readV.Gates_info(f"{design}.v", verilogs_inputs)
     cells_id = design_info.get_cells_ids()
@@ -53,6 +59,7 @@ transitions = combinations.base_transitions(len(cells_id))
 
 # Baseline
 singleSTA.run_single()
+
 base_arrivel = 0
 base_power = 0
 base_total_area = 0
