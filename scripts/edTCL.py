@@ -89,12 +89,12 @@ def number_outputs(outputs_list):
 
 
 # debug 
-tcl_file = f"t.tcl"
-design = "c17.v"
-link = "c17"
-paths = 2
-inputs_list = ["N1", "N2", "N3", "N6", "N7"]
-outputs_list = ["N22", "N23"]
+# tcl_file = f"t.tcl"
+# design = "c17.v"
+# link = "c17"
+# paths = 2
+# inputs_list = ["N1", "N2", "N3", "N6", "N7"]
+# outputs_list = ["N22", "N23"]
 
 """debug = Edit_tcl(
     tcl_file,
