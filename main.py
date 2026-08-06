@@ -5,9 +5,27 @@ import sys
 import os
 
 
-from scripts import combinations, readV, getFeatures, dict, singleSTA, utils, extData, dir, getArea
+from scripts import combinations, readV, getFeatures, dict, singleSTA, utils, extData, dir, getArea, makeCSV
 
-design = "debug"
+coluns_list = [
+    "DESIGN",
+    "CELL",
+    "LOGIC-TYPE",
+    "PATH-OCURENCE",
+    "PATHS-OCURENCE",
+    "FA-IN",
+    "FA-OUT",
+    "LOGIC-LEVEL",
+    "DEEP",
+    "LOADED-CELLS",
+    "DIF-ARRIVAL",
+    "CELL-AREA",
+    "COST-AREA",
+    "POWER"
+]
+
+
+design = "c17"
 verilogs_inputs = "./verilogs"
 out_dir = "./out"
 lib_dir = "./library"
@@ -15,6 +33,7 @@ lib = "Nangate45_typ.lib"
 tcl_timing = "timing.tcl"
 tcl_starter = "timingStarter.tcl"
 
+start_timer = time.time()
 
 
 
@@ -134,6 +153,77 @@ for i in range(len(transitions)):
         netlist_outputs
     )
 
-# Processa o impacto das combinações e insere na tabela
+# Criação do CSV antes do loop
+csv_dir = "./csv"
+csv_path = f"{csv_dir}/{design}.csv"
+csv_table = makeCSV.Create_table(coluns_list, csv_dir, csv_path)
+csv_table.make_csv()
 
- 
+# Processa o impacto das combinações e insere na tabela
+for j in range(len(transitions)):
+    sized_cell = cells_id[j]
+    sta_output = f"{out_dir}/sta_out/{sized_cell}{design}.txt"
+
+    read_sta_data = extData.Read_timing(sta_output)
+    arrivals = read_sta_data.get_arrival_times()
+    arrivals_list = np.array(list(arrivals.values()))
+    mean_arrival = utils.mean(arrivals_list)
+
+    # impacto do dimensionamento da celula no circuito
+    arrival_dif = arrival_starter - mean_arrival
+
+    power = read_sta_data.get_power()
+    
+    dim_cell_type = features_dict.nets_and_path[sized_cell]["LOGIC-TYPE"]
+    dim_cell_path = features_dict.nets_and_path[sized_cell]["PATH-OCURENCE"]
+    dim_cell_paths = features_dict.nets_and_path[sized_cell]["PATHS-OCURENCE"]
+    fain_dim_cell = features_dict.nets_and_path[sized_cell]["FA-IN"]
+    faout_dim_cell = features_dict.nets_and_path[sized_cell]["FA-OUT"]
+    logic_level_dim = features_dict.nets_and_path[sized_cell]["LOGIC-LEVEL"]
+    deep_dim_cell = features_dict.nets_and_path[sized_cell]["DEEP"]
+    loded_cells_by_dim = features_dict.nets_and_path[sized_cell]["LOADED-CELLS"]
+
+    cell_dim_area = area.search_area(f"{dim_cell_type}_X2")
+
+    # 1. Pega a combinação inteira desta iteração atual (j)
+    comb = transitions[j]
+
+    # 2. Faz o merge dos tipos lógicos com os novos tamanhos gerando ex: ["AND_X1", "NOR_X2", ...]
+    new_comb_with_types = utils.merge_size_id(logic_types, comb)
+    
+    # 3. Calcula a NOVA área TOTAL do circuito
+    total_new_area = area.return_total_area(new_comb_with_types)
+    
+    # 4. Calcula o CUSTO como a diferença entre a Área Total Nova e a Área Total Original
+    cost_area = area.cost(total_new_area, total_starter_area)
+
+    print(f"------ {design} ------")
+    print(f"------ {sized_cell} ------")
+    print(f"type: {dim_cell_type}")
+    print(f"fain: {fain_dim_cell}\nfaout: {faout_dim_cell}\nlogic level: {logic_level_dim}\ndeep: {deep_dim_cell}\nloded cells: {loded_cells_by_dim}")
+    print(f"arrival: {mean_arrival}  -  arrival dif: {arrival_dif}")
+    print(f"power: {power}")
+    print(f"cell area: {cell_dim_area}\nbase area: {initial_area}\ncost area: {cost_area}")
+
+    # Salva a linha no CSV
+    data_row = [
+        design,
+        sized_cell,
+        dim_cell_type,
+        dim_cell_path,
+        dim_cell_paths,
+        fain_dim_cell,
+        faout_dim_cell,
+        logic_level_dim,
+        deep_dim_cell,
+        loded_cells_by_dim,
+        arrival_dif,
+        cell_dim_area,
+        cost_area,
+        power
+    ]
+    csv_editor = makeCSV.Edit_csv(csv_path, data_row)
+    csv_editor.insert_csv_data()
+
+end_timer = time.time()
+print(f"TEMPO TOTAL {(end_timer - start_timer) / 60:.2f} min")

@@ -1,5 +1,5 @@
 import csv
-import os
+
 
 class Create_table:
     def __init__(self, coluns_list, csv_dir, csv_path):
@@ -8,7 +8,6 @@ class Create_table:
         self.csv_path = csv_path
 
     def make_csv(self):
-        os.makedirs(self.csv_dir, exist_ok=True)
         with open(self.csv_path, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
             writer.writerow(self.coluns_list)
