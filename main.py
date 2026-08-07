@@ -25,7 +25,7 @@ coluns_list = [
 ]
 
 
-design = "c17"
+design = "b14_C"
 verilogs_inputs = "./verilogs"
 out_dir = "./out"
 lib_dir = "./library"
@@ -134,6 +134,13 @@ for i in range(len(transitions)):
     
     comb = transitions[i]
     sized_cell = cells_id[i]
+    dim_cell_type = features_dict.nets_and_path[sized_cell]["LOGIC-TYPE"]
+    
+    # Se a celula não tem versão X2 na biblioteca, pula a geração
+    if area.search_area(f"{dim_cell_type}_X2") is None:
+        print(f"Skipping {sized_cell} ({dim_cell_type}) - not found in library.")
+        continue
+
     verilog_save_name = f"{sized_cell}{design}"
 
     make_verilog = combinations.Make_verilogs(comb, f"{verilog_save_name}.v", f"{verilogs_inputs}/{design}.v", f"{out_dir}/maped_verilogs")
@@ -162,6 +169,12 @@ csv_table.make_csv()
 # Processa o impacto das combinações e insere na tabela
 for j in range(len(transitions)):
     sized_cell = cells_id[j]
+    dim_cell_type = features_dict.nets_and_path[sized_cell]["LOGIC-TYPE"]
+
+    # Se não existe na biblioteca, pula
+    if area.search_area(f"{dim_cell_type}_X2") is None:
+        continue
+
     sta_output = f"{out_dir}/sta_out/{sized_cell}{design}.txt"
 
     read_sta_data = extData.Read_timing(sta_output)
