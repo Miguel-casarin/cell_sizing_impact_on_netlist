@@ -130,7 +130,7 @@ def merge_dicts(dict_base: dict, field_base: str, dict_update: dict, field_updat
             else:
                 dict_base[key][field_base] = update_entry
         else:
-            print(f"ERROR to merge path ocurence in base dict")
+            print(f"ERROR to merge path ocurence in base dict: key '{key}' not found")
 
 def copy_and_rename(tamplete_file: str, output_file: str) -> None:
     shutil.copy(tamplete_file, output_file)
