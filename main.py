@@ -28,7 +28,7 @@ coluns_list = [
 
 MAX_WORKERS = max(1, os.cpu_count() - 1)
 
-design = "b17_C"
+design = "b21_C"
 verilogs_inputs = "./verilogs"
 out_dir = "./out"
 lib_dir = "./library"
