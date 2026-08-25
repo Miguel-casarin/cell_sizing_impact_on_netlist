@@ -20,6 +20,9 @@ coluns_list = [
     "LOGIC-LEVEL",
     "DEEP",
     "LOADED-CELLS",
+    "C-IN",
+    "C-LOAD",
+    "C-MARGIN",
     "DIF-ARRIVAL",
     "CELL-AREA",
     "COST-AREA",
@@ -28,7 +31,7 @@ coluns_list = [
 
 MAX_WORKERS = max(1, os.cpu_count() - 1)
 
-design = "b21_C"
+design = "c17"
 verilogs_inputs = "./verilogs"
 out_dir = "./out"
 lib_dir = "./library"
