@@ -4,7 +4,7 @@ import json
 import re
 import pprint
 
-import readV
+#import readV
 
 # Para cada gate do netlist retorna os gates alimentados pelo seus faout
 class Netlist_fouts:

@@ -1,7 +1,7 @@
 import threading
 import numpy as np
 
-from scripts import combinations, singleSTA, extData, utils, makeCSV
+from scripts import combinations, singleSTA, extData, utils, makeCSV, capacitance
 
 
 class CellProcessor:
@@ -21,6 +21,8 @@ class CellProcessor:
         arrival_starter,
         total_starter_area,
         csv_path,
+        json_capacitance,
+        map_fanouts,
     ):
         self.design = design
         self.verilogs_inputs = verilogs_inputs
@@ -35,6 +37,10 @@ class CellProcessor:
         self.arrival_starter = arrival_starter
         self.total_starter_area = total_starter_area
         self.csv_path = csv_path
+        self.json_capacitance = json_capacitance
+        self.map_fanouts = map_fanouts
+
+        self.cap = capacitance.Cells_cap(self.json_capacitance)
 
         self.csv_lock = threading.Lock()
 
@@ -54,6 +60,21 @@ class CellProcessor:
         utils.copy_and_rename(self.tcl_timing, tcl_path)
 
         return tcl_path
+
+    def capacitance_in(self, dim_cell_type):
+        return self.cap.imput_capacitance(f"{dim_cell_type}_X2")
+
+    def capacitance_out(self, dim_cell_type):
+        return self.cap.out_capacitance(f"{dim_cell_type}_X2")
+    
+    def capacitance_load(self, sized_cell):
+        loaded_keys = self.map_fanouts.get(sized_cell, set())
+        conected_cells = []
+        for lk in loaded_keys:
+            if lk in self.features_dict.nets_and_path:
+                logic_type = self.features_dict.nets_and_path[lk]["LOGIC-TYPE"]
+                conected_cells.append(f"{logic_type}_X1")
+        return self.cap.loaded_capacitances(conected_cells)
 
     def run_sta(self, tcl_path, sized_cell):
         singleSTA.run_single(
@@ -94,6 +115,9 @@ class CellProcessor:
             cell_data["LOGIC-LEVEL"],
             cell_data["DEEP"],
             cell_data["LOADED-CELLS"],
+            self.capacitance_in(dim_cell_type),
+            self.capacitance_out(dim_cell_type),
+            self.capacitance_load(sized_cell),
             arrival_dif,
             self.area.search_area(f"{dim_cell_type}_X2"),
             cost_area,
